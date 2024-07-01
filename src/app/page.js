@@ -1,95 +1,119 @@
+"use client"
+
 import Image from "next/image";
 import styles from "./page.module.css";
 
+// import { useState } from 'react';
+
+// const decodeBase64 = (encoded) => {
+//   try {
+//     const decodedUrl = atob(encoded);
+//     const emailMatch = decodedUrl.match(/[^\/]+@[^\/]+/);
+//     return emailMatch ? emailMatch[0] : "Email not found";
+//   } catch (error) {
+//     return "Invalid Base64 string";
+//   }
+// };
+
+// export default function Home() {
+//   const [encodedUrl, setEncodedUrl] = useState('');
+//   const [decodedEmail, setDecodedEmail] = useState('');
+
+//   const handleDecode = () => {
+//     const base64Pattern = /origurl=([^&]*)/;
+//     const match = encodedUrl.match(base64Pattern);
+//     if (match) {
+//       const base64Str = decodeURIComponent(match[1]);
+//       const decoded = decodeBase64(base64Str);
+//       setDecodedEmail(decoded);
+//     } else {
+//       setDecodedEmail("No Base64 string found in URL");
+//     }
+//   };
+
+//   return (
+//     <div style={{ padding: '2rem' }}>
+//       <h1>Email Decoder</h1>
+//       <input 
+//         type="text" 
+//         value={encodedUrl} 
+//         onChange={(e) => setEncodedUrl(e.target.value)} 
+//         placeholder="Paste encoded URL here" 
+//         style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }} 
+//       />
+//       <button onClick={handleDecode} style={{ padding: '0.5rem 1rem' }}>Decode Email</button>
+//       {decodedEmail && (
+//         <div style={{ marginTop: '1rem' }}>
+//           <strong>Decoded Email:</strong> <span>{decodedEmail}</span>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+import { useState } from 'react';
+
+const decodeBase64 = (encoded) => {
+  try {
+    const decodedUrl = atob(encoded);
+    const emailMatch = decodedUrl.match(/[^\/]+@[^\/]+/);
+    return emailMatch ? emailMatch[0] : null;
+  } catch (error) {
+    return null;
+  }
+};
+
 export default function Home() {
+  const [encodedUrl, setEncodedUrl] = useState('');
+  const [emails, setEmails] = useState([]);
+
+  const handleDecode = async () => {
+    fetch(encodedUrl, { redirect: 'follow' })
+  .then(response => console.log(response.url)); // выводит конечный URL после всех редиректов
+
+    const base64Pattern = /origurl=([^&]*)/;
+    const match = encodedUrl.match(base64Pattern);
+    if (match) {
+      const base64Str = decodeURIComponent(match[1]);
+      const decoded = decodeBase64(base64Str);
+      if (decoded) {
+        setEmails([...emails, decoded]);
+      } else {
+        alert("Invalid Base64 string or email not found");
+      }
+    } else {
+      alert("No Base64 string found in URL");
+    }
+  };
+
+  const copyToClipboard = () => {
+    const emailText = emails.join('\n');
+    navigator.clipboard.writeText(emailText)
+      .then(() => alert('Emails copied to clipboard!'))
+      .catch(() => alert('Failed to copy emails.'));
+  };
+
+  
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <div style={{ padding: '2rem' }}>
+      <h1>Email Decoder</h1>
+      <input 
+        type="text" 
+        value={encodedUrl} 
+        onChange={(e) => setEncodedUrl(e.target.value)} 
+        placeholder="Paste encoded URL here" 
+        style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }} 
+      />
+      <button onClick={handleDecode} style={{ padding: '0.5rem 1rem' }}>Decode Email</button>
+      <button onClick={copyToClipboard} style={{ padding: '0.5rem 1rem', marginLeft: '1rem' }}>Copy All Emails</button>
+      <ol style={{ marginTop: '1rem' }}>
+        {emails.map((email, index) => (
+          <li key={index}>{email}</li>
+        ))}
+      </ol>
+    </div>
   );
 }
+
+
